@@ -5,4 +5,5 @@ dist/
 .env
 
 # Custom configurations (private/local configs)
-custom-configs/
+custom-configs/*
+!custom-configs/README.md
