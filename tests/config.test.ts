@@ -1,5 +1,4 @@
 import * as fs from 'fs';
-import * as path from 'path';
 import { LoadTestConfig } from '../src/types';
 
 // Mock fs module
@@ -7,8 +6,6 @@ jest.mock('fs');
 const mockFs = fs as jest.Mocked<typeof fs>;
 
 describe('Configuration Loading', () => {
-  const mockConfigPath = path.join(process.cwd(), 'config.json');
-
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -37,13 +34,13 @@ describe('Configuration Loading', () => {
         concurrentUsers: 3,
         frequencyMs: 500,
         headers: {
-          'Authorization': 'Bearer token123',
+          Authorization: 'Bearer token123',
           'Content-Type': 'application/json'
         }
       };
 
       expect(config.headers).toEqual({
-        'Authorization': 'Bearer token123',
+        Authorization: 'Bearer token123',
         'Content-Type': 'application/json'
       });
     });
@@ -99,11 +96,7 @@ describe('Configuration Loading', () => {
     });
 
     it('should validate concurrentUsers is positive', () => {
-      const configs = [
-        { concurrentUsers: 0 },
-        { concurrentUsers: -1 },
-        { concurrentUsers: 1 }
-      ];
+      const configs = [{ concurrentUsers: 0 }, { concurrentUsers: -1 }, { concurrentUsers: 1 }];
 
       expect(configs[0].concurrentUsers).toBeLessThanOrEqual(0);
       expect(configs[1].concurrentUsers).toBeLessThan(0);
@@ -112,8 +105,8 @@ describe('Configuration Loading', () => {
 
     it('should validate frequencyMs meets minimum', () => {
       const configs = [
-        { frequencyMs: 50 },  // Too low
-        { frequencyMs: 99 },  // Too low
+        { frequencyMs: 50 }, // Too low
+        { frequencyMs: 99 }, // Too low
         { frequencyMs: 100 }, // Valid
         { frequencyMs: 1000 } // Valid
       ];

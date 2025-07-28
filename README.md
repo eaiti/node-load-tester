@@ -50,6 +50,7 @@ Create or modify the `config.json` file in the root directory:
 The `auth` configuration supports multiple authentication methods:
 
 #### Basic Authentication
+
 ```json
 {
   "auth": {
@@ -61,6 +62,7 @@ The `auth` configuration supports multiple authentication methods:
 ```
 
 #### Bearer Token (JWT)
+
 ```json
 {
   "auth": {
@@ -71,6 +73,7 @@ The `auth` configuration supports multiple authentication methods:
 ```
 
 #### API Key
+
 ```json
 {
   "auth": {
@@ -80,9 +83,11 @@ The `auth` configuration supports multiple authentication methods:
   }
 }
 ```
+
 Note: `apiKeyHeader` defaults to `"X-API-Key"` if not specified.
 
 #### Custom Authentication
+
 ```json
 {
   "auth": {
@@ -96,6 +101,7 @@ Note: `apiKeyHeader` defaults to `"X-API-Key"` if not specified.
 ## Usage
 
 ### Default Configuration
+
 ```bash
 # Development mode (uses config.json in current directory)
 npm run dev
@@ -106,6 +112,7 @@ npm start
 ```
 
 ### Custom Configuration File
+
 ```bash
 # Development mode with custom config file
 npm run dev -- ./my-config.json
@@ -118,6 +125,7 @@ node dist/index.js /path/to/custom-config.json
 ```
 
 ### Help
+
 ```bash
 npm run dev -- --help
 # or
@@ -179,6 +187,7 @@ npm run test:watch
 ```
 
 Tests cover:
+
 - Basic load testing functionality
 - Error handling scenarios
 - Custom headers and basic authentication
@@ -190,12 +199,14 @@ Tests cover:
 The `examples/` directory contains pre-configured JSON files demonstrating various features:
 
 ### Authentication Examples
+
 - `examples/config.example.json` - Bearer token authentication
 - `examples/config.basic-auth.json` - Basic authentication (username/password)
 - `examples/config.apikey.json` - API key authentication
 - `examples/config.custom-auth.json` - Custom header authentication
 
 ### HTTP Method Examples
+
 - `examples/config.post.json` - POST request with JSON body
 - `examples/config.put.json` - PUT request example
 - `examples/config.patch.json` - PATCH request example
@@ -204,10 +215,28 @@ The `examples/` directory contains pre-configured JSON files demonstrating vario
 - `examples/config.options.json` - OPTIONS request example
 
 You can run any example using:
+
 ```bash
 npm run dev -- examples/config.post.json
 # or use the predefined scripts
 npm run dev:post
+```
+
+## Custom Configurations
+
+For your personal/private configurations, use the `custom-configs/` directory:
+
+- **Git-ignored**: Configs in this directory won't be committed to version control
+- **Secure**: Safe place for configs with real endpoints, tokens, or sensitive data
+- **Convenient**: Reference them in scripts or run directly
+
+```bash
+# Copy an example as a starting point
+cp examples/config.post.json custom-configs/my-api-test.json
+
+# Edit with your real settings
+# Then run it
+npm run dev -- custom-configs/my-api-test.json
 ```
 
 ## License

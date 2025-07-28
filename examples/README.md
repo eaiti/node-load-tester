@@ -68,3 +68,18 @@ node dist/index.js examples/config.basic-auth.json
 Feel free to modify these example files or create new ones based on your testing needs. All examples use public testing endpoints like httpbin.org for demonstration purposes.
 
 For production use, replace the endpoints and authentication credentials with your actual API details.
+
+## Private/Custom Configurations
+
+For your personal configurations with real endpoints and credentials, use the `custom-configs/` directory instead:
+
+```bash
+# Copy an example as a starting point
+cp examples/config.post.json ../custom-configs/my-production-test.json
+
+# Edit with your real settings (this won't be committed to git)
+# Then run it
+npm run dev -- custom-configs/my-production-test.json
+```
+
+The `custom-configs/` directory is git-ignored to keep your sensitive configurations private.

@@ -5,17 +5,16 @@ import { LoadTestConfig } from '../src/types';
 describe('LoadTester', () => {
   let loadTester: LoadTester;
   const mockEndpoint = 'http://test-api.example.com';
-  
+
   beforeEach(() => {
-    // Clear any existing nock interceptors
-    nock.cleanAll();
+    // Setup fresh state for each test
   });
 
   afterEach(() => {
     if (loadTester) {
       loadTester.stop();
     }
-    nock.cleanAll();
+    // Clean up after each test
   });
 
   describe('Basic Load Testing', () => {
@@ -33,16 +32,16 @@ describe('LoadTester', () => {
         .reply(200, { success: true, timestamp: Date.now() });
 
       loadTester = new LoadTester(config);
-      
+
       // Start the load test
       await loadTester.start();
-      
+
       // Let it run for a short time
       await new Promise(resolve => setTimeout(resolve, 1200));
-      
+
       // Stop the load test
       loadTester.stop();
-      
+
       // Verify that requests were made
       expect(scope.pendingMocks().length).toBeLessThan(4);
     });
@@ -61,11 +60,11 @@ describe('LoadTester', () => {
         .reply(500, { error: 'Internal Server Error' });
 
       loadTester = new LoadTester(config);
-      
+
       await loadTester.start();
       await new Promise(resolve => setTimeout(resolve, 1200));
       loadTester.stop();
-      
+
       // Verify that requests were attempted
       expect(scope.pendingMocks().length).toBeLessThan(2);
     });
@@ -90,11 +89,11 @@ describe('LoadTester', () => {
         .reply(200, { authenticated: true });
 
       loadTester = new LoadTester(config);
-      
+
       await loadTester.start();
       await new Promise(resolve => setTimeout(resolve, 1200));
       loadTester.stop();
-      
+
       expect(scope.isDone()).toBe(true);
     });
 
@@ -115,11 +114,11 @@ describe('LoadTester', () => {
         .reply(200, { authenticated: true, type: 'bearer' });
 
       loadTester = new LoadTester(config);
-      
+
       await loadTester.start();
       await new Promise(resolve => setTimeout(resolve, 1200));
       loadTester.stop();
-      
+
       expect(scope.isDone()).toBe(true);
     });
 
@@ -140,11 +139,11 @@ describe('LoadTester', () => {
         .reply(200, { authenticated: true, type: 'apikey' });
 
       loadTester = new LoadTester(config);
-      
+
       await loadTester.start();
       await new Promise(resolve => setTimeout(resolve, 1200));
       loadTester.stop();
-      
+
       expect(scope.isDone()).toBe(true);
     });
 
@@ -166,11 +165,11 @@ describe('LoadTester', () => {
         .reply(200, { authenticated: true, type: 'apikey' });
 
       loadTester = new LoadTester(config);
-      
+
       await loadTester.start();
       await new Promise(resolve => setTimeout(resolve, 1200));
       loadTester.stop();
-      
+
       expect(scope.isDone()).toBe(true);
     });
 
@@ -192,11 +191,11 @@ describe('LoadTester', () => {
         .reply(200, { authenticated: true, type: 'custom' });
 
       loadTester = new LoadTester(config);
-      
+
       await loadTester.start();
       await new Promise(resolve => setTimeout(resolve, 1200));
       loadTester.stop();
-      
+
       expect(scope.isDone()).toBe(true);
     });
 
@@ -217,11 +216,11 @@ describe('LoadTester', () => {
         .reply(200, { authenticated: true, legacy: true });
 
       loadTester = new LoadTester(config);
-      
+
       await loadTester.start();
       await new Promise(resolve => setTimeout(resolve, 1200));
       loadTester.stop();
-      
+
       expect(scope.isDone()).toBe(true);
     });
 
@@ -242,11 +241,11 @@ describe('LoadTester', () => {
         .reply(401, { error: 'Invalid token' });
 
       loadTester = new LoadTester(config);
-      
+
       await loadTester.start();
       await new Promise(resolve => setTimeout(resolve, 1200));
       loadTester.stop();
-      
+
       expect(scope.isDone()).toBe(true);
     });
   });
@@ -297,11 +296,11 @@ describe('LoadTester', () => {
         .reply(200, { data: 'test' });
 
       loadTester = new LoadTester(config);
-      
+
       await loadTester.start();
       await new Promise(resolve => setTimeout(resolve, 1200));
       loadTester.stop();
-      
+
       // Response times should be tracked (though we can't easily test private methods)
       expect(scope.pendingMocks().length).toBeLessThan(2);
     });
@@ -315,7 +314,7 @@ describe('LoadTester', () => {
         frequencyMs: 1000,
         headers: {
           'X-Custom-Header': 'test-value',
-          'Accept': 'application/json'
+          Accept: 'application/json'
         }
       };
 
@@ -326,11 +325,11 @@ describe('LoadTester', () => {
         .reply(200, { received: 'headers' });
 
       loadTester = new LoadTester(config);
-      
+
       await loadTester.start();
       await new Promise(resolve => setTimeout(resolve, 1200));
       loadTester.stop();
-      
+
       expect(scope.isDone()).toBe(true);
     });
   });
