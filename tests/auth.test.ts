@@ -1,9 +1,9 @@
-import { LoadTestConfig } from '../src/types';
+import { EndpointTestConfig } from '../src/types';
 
 describe('Authentication Configuration Validation', () => {
   describe('Valid Auth Configurations', () => {
     it('should accept basic auth configuration', () => {
-      const config: LoadTestConfig = {
+      const config: EndpointTestConfig = {
         endpoint: 'https://api.example.com/test',
         concurrentUsers: 1,
         frequencyMs: 1000,
@@ -20,7 +20,7 @@ describe('Authentication Configuration Validation', () => {
     });
 
     it('should accept bearer token configuration', () => {
-      const config: LoadTestConfig = {
+      const config: EndpointTestConfig = {
         endpoint: 'https://api.example.com/test',
         concurrentUsers: 1,
         frequencyMs: 1000,
@@ -35,7 +35,7 @@ describe('Authentication Configuration Validation', () => {
     });
 
     it('should accept API key configuration with default header', () => {
-      const config: LoadTestConfig = {
+      const config: EndpointTestConfig = {
         endpoint: 'https://api.example.com/test',
         concurrentUsers: 1,
         frequencyMs: 1000,
@@ -51,7 +51,7 @@ describe('Authentication Configuration Validation', () => {
     });
 
     it('should accept API key configuration with custom header', () => {
-      const config: LoadTestConfig = {
+      const config: EndpointTestConfig = {
         endpoint: 'https://api.example.com/test',
         concurrentUsers: 1,
         frequencyMs: 1000,
@@ -68,7 +68,7 @@ describe('Authentication Configuration Validation', () => {
     });
 
     it('should accept custom auth configuration', () => {
-      const config: LoadTestConfig = {
+      const config: EndpointTestConfig = {
         endpoint: 'https://api.example.com/test',
         concurrentUsers: 1,
         frequencyMs: 1000,
@@ -85,18 +85,19 @@ describe('Authentication Configuration Validation', () => {
     });
 
     it('should maintain backward compatibility with basicAuth', () => {
-      const config: LoadTestConfig = {
+      const config: EndpointTestConfig = {
         endpoint: 'https://api.example.com/test',
         concurrentUsers: 1,
         frequencyMs: 1000,
-        basicAuth: {
+        auth: {
+          type: 'basic',
           username: 'legacyuser',
           password: 'legacypass'
         }
       };
 
-      expect(config.basicAuth?.username).toBe('legacyuser');
-      expect(config.basicAuth?.password).toBe('legacypass');
+      expect(config.auth?.username).toBe('legacyuser');
+      expect(config.auth?.password).toBe('legacypass');
     });
   });
 
@@ -105,7 +106,7 @@ describe('Authentication Configuration Validation', () => {
 
     it('should validate auth types', () => {
       validAuthTypes.forEach(type => {
-        const config: LoadTestConfig = {
+        const config: EndpointTestConfig = {
           endpoint: 'https://api.example.com/test',
           concurrentUsers: 1,
           frequencyMs: 1000,
@@ -181,27 +182,24 @@ describe('Authentication Configuration Validation', () => {
 
   describe('Mixed Configuration', () => {
     it('should handle config with both auth and basicAuth (auth takes precedence)', () => {
-      const config: LoadTestConfig = {
+      const config: EndpointTestConfig = {
         endpoint: 'https://api.example.com/test',
         concurrentUsers: 1,
         frequencyMs: 1000,
         auth: {
-          type: 'bearer',
-          token: 'new-token'
-        },
-        basicAuth: {
+          type: "basic",
           username: 'legacy',
           password: 'legacy'
         }
       };
 
-      expect(config.auth?.type).toBe('bearer');
-      expect(config.auth?.token).toBe('new-token');
-      expect(config.basicAuth?.username).toBe('legacy');
+      expect(config.auth?.type).toBe('basic');
+      expect(config.auth?.username).toBe('legacy');
+      expect(config.auth?.password).toBe('legacy');
     });
 
     it('should handle auth with headers', () => {
-      const config: LoadTestConfig = {
+      const config: EndpointTestConfig = {
         endpoint: 'https://api.example.com/test',
         concurrentUsers: 1,
         frequencyMs: 1000,

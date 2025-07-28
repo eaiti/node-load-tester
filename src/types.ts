@@ -1,4 +1,5 @@
-export interface LoadTestConfig {
+export interface EndpointTestConfig {
+  name?: string; // Optional name for the endpoint test
   endpoint: string;
   concurrentUsers: number;
   frequencyMs: number;
@@ -19,11 +20,10 @@ export interface LoadTestConfig {
     customHeader?: string;
     customValue?: string;
   };
-  // Deprecated: keeping for backward compatibility
-  basicAuth?: {
-    username: string;
-    password: string;
-  };
+}
+
+export interface LoadTestConfig {
+  endpoints: EndpointTestConfig[];
 }
 
 export interface RequestResult {
@@ -32,6 +32,8 @@ export interface RequestResult {
   statusCode: number;
   success: boolean;
   error?: string;
+  endpointName?: string; // Track which endpoint this result is for
+  endpoint: string; // Track the actual URL
 }
 
 export interface LoadTestStats {
@@ -42,4 +44,9 @@ export interface LoadTestStats {
   minResponseTime: number;
   maxResponseTime: number;
   requestsPerSecond: number;
+}
+
+export interface EndpointStats extends LoadTestStats {
+  endpointName: string;
+  endpoint: string;
 }

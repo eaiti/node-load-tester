@@ -1,25 +1,26 @@
 import nock from 'nock';
 import { LoadTester } from '../src/LoadTester';
-import { LoadTestConfig } from '../src/types';
+import { EndpointTestConfig } from '../src/types';
 
 describe('LoadTester', () => {
   let loadTester: LoadTester;
   const mockEndpoint = 'http://test-api.example.com';
 
   beforeEach(() => {
-    // Setup fresh state for each test
+    // Clear any existing nock interceptors
+    nock.cleanAll();
   });
 
   afterEach(() => {
     if (loadTester) {
       loadTester.stop();
     }
-    // Clean up after each test
+    nock.cleanAll();
   });
 
   describe('Basic Load Testing', () => {
     it('should make successful requests to the endpoint', async () => {
-      const config: LoadTestConfig = {
+      const config: EndpointTestConfig = {
         endpoint: `${mockEndpoint}/api/test`,
         concurrentUsers: 2,
         frequencyMs: 500
@@ -31,7 +32,7 @@ describe('LoadTester', () => {
         .times(4) // Allow multiple requests
         .reply(200, { success: true, timestamp: Date.now() });
 
-      loadTester = new LoadTester(config);
+      loadTester = new LoadTester({ endpoints: [config] });
 
       // Start the load test
       await loadTester.start();
@@ -47,7 +48,7 @@ describe('LoadTester', () => {
     });
 
     it('should handle failed requests gracefully', async () => {
-      const config: LoadTestConfig = {
+      const config: EndpointTestConfig = {
         endpoint: `${mockEndpoint}/api/error`,
         concurrentUsers: 1,
         frequencyMs: 500
@@ -59,7 +60,7 @@ describe('LoadTester', () => {
         .times(2)
         .reply(500, { error: 'Internal Server Error' });
 
-      loadTester = new LoadTester(config);
+      loadTester = new LoadTester({ endpoints: [config] });
 
       await loadTester.start();
       await new Promise(resolve => setTimeout(resolve, 1200));
@@ -72,7 +73,7 @@ describe('LoadTester', () => {
 
   describe('Authentication Types', () => {
     it('should send basic auth credentials using new auth format', async () => {
-      const config: LoadTestConfig = {
+      const config: EndpointTestConfig = {
         endpoint: `${mockEndpoint}/api/auth`,
         concurrentUsers: 1,
         frequencyMs: 1000,
@@ -88,7 +89,7 @@ describe('LoadTester', () => {
         .basicAuth({ user: 'testuser', pass: 'testpass' })
         .reply(200, { authenticated: true });
 
-      loadTester = new LoadTester(config);
+      loadTester = new LoadTester({ endpoints: [config] });
 
       await loadTester.start();
       await new Promise(resolve => setTimeout(resolve, 1200));
@@ -98,7 +99,7 @@ describe('LoadTester', () => {
     });
 
     it('should send bearer token authentication', async () => {
-      const config: LoadTestConfig = {
+      const config: EndpointTestConfig = {
         endpoint: `${mockEndpoint}/api/bearer`,
         concurrentUsers: 1,
         frequencyMs: 1000,
@@ -113,7 +114,7 @@ describe('LoadTester', () => {
         .matchHeader('Authorization', 'Bearer test-bearer-token-123')
         .reply(200, { authenticated: true, type: 'bearer' });
 
-      loadTester = new LoadTester(config);
+      loadTester = new LoadTester({ endpoints: [config] });
 
       await loadTester.start();
       await new Promise(resolve => setTimeout(resolve, 1200));
@@ -123,7 +124,7 @@ describe('LoadTester', () => {
     });
 
     it('should send API key authentication with default header', async () => {
-      const config: LoadTestConfig = {
+      const config: EndpointTestConfig = {
         endpoint: `${mockEndpoint}/api/apikey`,
         concurrentUsers: 1,
         frequencyMs: 1000,
@@ -138,7 +139,7 @@ describe('LoadTester', () => {
         .matchHeader('X-API-Key', 'test-api-key-456')
         .reply(200, { authenticated: true, type: 'apikey' });
 
-      loadTester = new LoadTester(config);
+      loadTester = new LoadTester({ endpoints: [config] });
 
       await loadTester.start();
       await new Promise(resolve => setTimeout(resolve, 1200));
@@ -148,7 +149,7 @@ describe('LoadTester', () => {
     });
 
     it('should send API key authentication with custom header', async () => {
-      const config: LoadTestConfig = {
+      const config: EndpointTestConfig = {
         endpoint: `${mockEndpoint}/api/apikey`,
         concurrentUsers: 1,
         frequencyMs: 1000,
@@ -164,7 +165,7 @@ describe('LoadTester', () => {
         .matchHeader('X-Custom-API-Key', 'test-api-key-789')
         .reply(200, { authenticated: true, type: 'apikey' });
 
-      loadTester = new LoadTester(config);
+      loadTester = new LoadTester({ endpoints: [config] });
 
       await loadTester.start();
       await new Promise(resolve => setTimeout(resolve, 1200));
@@ -174,7 +175,7 @@ describe('LoadTester', () => {
     });
 
     it('should send custom authentication header', async () => {
-      const config: LoadTestConfig = {
+      const config: EndpointTestConfig = {
         endpoint: `${mockEndpoint}/api/custom`,
         concurrentUsers: 1,
         frequencyMs: 1000,
@@ -190,7 +191,7 @@ describe('LoadTester', () => {
         .matchHeader('X-Auth-Token', 'custom-token-abc123')
         .reply(200, { authenticated: true, type: 'custom' });
 
-      loadTester = new LoadTester(config);
+      loadTester = new LoadTester({ endpoints: [config] });
 
       await loadTester.start();
       await new Promise(resolve => setTimeout(resolve, 1200));
@@ -200,11 +201,12 @@ describe('LoadTester', () => {
     });
 
     it('should maintain backward compatibility with basicAuth format', async () => {
-      const config: LoadTestConfig = {
+      const config: EndpointTestConfig = {
         endpoint: `${mockEndpoint}/api/legacy`,
         concurrentUsers: 1,
         frequencyMs: 1000,
-        basicAuth: {
+        auth: {
+          type: 'basic',
           username: 'legacyuser',
           password: 'legacypass'
         }
@@ -215,7 +217,7 @@ describe('LoadTester', () => {
         .basicAuth({ user: 'legacyuser', pass: 'legacypass' })
         .reply(200, { authenticated: true, legacy: true });
 
-      loadTester = new LoadTester(config);
+      loadTester = new LoadTester({ endpoints: [config] });
 
       await loadTester.start();
       await new Promise(resolve => setTimeout(resolve, 1200));
@@ -225,7 +227,7 @@ describe('LoadTester', () => {
     });
 
     it('should handle authentication failures for different auth types', async () => {
-      const config: LoadTestConfig = {
+      const config: EndpointTestConfig = {
         endpoint: `${mockEndpoint}/api/auth-fail`,
         concurrentUsers: 1,
         frequencyMs: 1000,
@@ -240,7 +242,7 @@ describe('LoadTester', () => {
         .matchHeader('Authorization', 'Bearer invalid-token')
         .reply(401, { error: 'Invalid token' });
 
-      loadTester = new LoadTester(config);
+      loadTester = new LoadTester({ endpoints: [config] });
 
       await loadTester.start();
       await new Promise(resolve => setTimeout(resolve, 1200));
@@ -252,17 +254,17 @@ describe('LoadTester', () => {
 
   describe('Configuration Validation', () => {
     it('should work with minimal valid configuration', () => {
-      const config: LoadTestConfig = {
+      const config: EndpointTestConfig = {
         endpoint: `${mockEndpoint}/api/test`,
         concurrentUsers: 1,
         frequencyMs: 100
       };
 
-      expect(() => new LoadTester(config)).not.toThrow();
+      expect(() => new LoadTester({ endpoints: [config] })).not.toThrow();
     });
 
     it('should work with full configuration including optional fields', () => {
-      const config: LoadTestConfig = {
+      const config: EndpointTestConfig = {
         endpoint: `${mockEndpoint}/api/test`,
         concurrentUsers: 5,
         frequencyMs: 200,
@@ -270,19 +272,20 @@ describe('LoadTester', () => {
           'Content-Type': 'application/json',
           'X-API-Key': 'test-key'
         },
-        basicAuth: {
+        auth: {
+          type: 'basic',
           username: 'user',
           password: 'pass'
         }
       };
 
-      expect(() => new LoadTester(config)).not.toThrow();
+      expect(() => new LoadTester({ endpoints: [config] })).not.toThrow();
     });
   });
 
   describe('Performance Metrics', () => {
     it('should track response times', async () => {
-      const config: LoadTestConfig = {
+      const config: EndpointTestConfig = {
         endpoint: `${mockEndpoint}/api/timing`,
         concurrentUsers: 1,
         frequencyMs: 500
@@ -295,7 +298,7 @@ describe('LoadTester', () => {
         .delay(100) // Add 100ms delay
         .reply(200, { data: 'test' });
 
-      loadTester = new LoadTester(config);
+      loadTester = new LoadTester({ endpoints: [config] });
 
       await loadTester.start();
       await new Promise(resolve => setTimeout(resolve, 1200));
@@ -308,7 +311,7 @@ describe('LoadTester', () => {
 
   describe('Headers and Legacy Authentication', () => {
     it('should send custom headers with requests', async () => {
-      const config: LoadTestConfig = {
+      const config: EndpointTestConfig = {
         endpoint: `${mockEndpoint}/api/headers`,
         concurrentUsers: 1,
         frequencyMs: 1000,
@@ -324,7 +327,7 @@ describe('LoadTester', () => {
         .matchHeader('Accept', 'application/json')
         .reply(200, { received: 'headers' });
 
-      loadTester = new LoadTester(config);
+      loadTester = new LoadTester({ endpoints: [config] });
 
       await loadTester.start();
       await new Promise(resolve => setTimeout(resolve, 1200));

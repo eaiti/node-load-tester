@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import { LoadTestConfig } from '../src/types';
+import { EndpointTestConfig } from '../src/types';
 
 // Mock fs module
 jest.mock('fs');
@@ -12,7 +12,7 @@ describe('Configuration Loading', () => {
 
   describe('Valid Configurations', () => {
     it('should load minimal valid configuration', () => {
-      const config: LoadTestConfig = {
+      const config: EndpointTestConfig = {
         endpoint: 'https://api.example.com/test',
         concurrentUsers: 5,
         frequencyMs: 1000
@@ -29,7 +29,7 @@ describe('Configuration Loading', () => {
     });
 
     it('should load configuration with headers', () => {
-      const config: LoadTestConfig = {
+      const config: EndpointTestConfig = {
         endpoint: 'https://api.example.com/test',
         concurrentUsers: 3,
         frequencyMs: 500,
@@ -46,40 +46,43 @@ describe('Configuration Loading', () => {
     });
 
     it('should load configuration with basic auth', () => {
-      const config: LoadTestConfig = {
+      const config: EndpointTestConfig = {
         endpoint: 'https://api.example.com/test',
         concurrentUsers: 2,
         frequencyMs: 200,
-        basicAuth: {
+        auth: {
+          type: "basic",
           username: 'testuser',
           password: 'testpass'
         }
       };
 
-      expect(config.basicAuth).toEqual({
+      expect(config.auth).toEqual({
+        type: 'basic',
         username: 'testuser',
         password: 'testpass'
       });
     });
 
     it('should load configuration with both headers and basic auth', () => {
-      const config: LoadTestConfig = {
+      const config: EndpointTestConfig = {
         endpoint: 'https://api.example.com/test',
         concurrentUsers: 1,
         frequencyMs: 100,
         headers: {
           'X-Custom-Header': 'value'
         },
-        basicAuth: {
+        auth: {
+          type: 'basic',
           username: 'user',
           password: 'pass'
         }
       };
 
       expect(config.headers).toBeDefined();
-      expect(config.basicAuth).toBeDefined();
+      expect(config.auth).toBeDefined();
       expect(config.headers!['X-Custom-Header']).toBe('value');
-      expect(config.basicAuth!.username).toBe('user');
+      expect(config.auth!.username).toBe('user');
     });
   });
 
@@ -120,7 +123,7 @@ describe('Configuration Loading', () => {
 
   describe('Optional Fields', () => {
     it('should handle missing optional headers', () => {
-      const config: LoadTestConfig = {
+      const config: EndpointTestConfig = {
         endpoint: 'https://api.example.com/test',
         concurrentUsers: 1,
         frequencyMs: 1000
@@ -131,18 +134,18 @@ describe('Configuration Loading', () => {
     });
 
     it('should handle missing optional basic auth', () => {
-      const config: LoadTestConfig = {
+      const config: EndpointTestConfig = {
         endpoint: 'https://api.example.com/test',
         concurrentUsers: 1,
         frequencyMs: 1000
         // No basicAuth
       };
 
-      expect(config.basicAuth).toBeUndefined();
+      expect(config.auth).toBeUndefined();
     });
 
     it('should handle empty headers object', () => {
-      const config: LoadTestConfig = {
+      const config: EndpointTestConfig = {
         endpoint: 'https://api.example.com/test',
         concurrentUsers: 1,
         frequencyMs: 1000,

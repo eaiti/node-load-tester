@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { LoadTester } from './LoadTester';
-import { LoadTestConfig } from './types';
+import { LoadTestConfig, EndpointTestConfig } from './types';
 
 function validateHttpMethod(method: string): void {
   const validMethods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'];
@@ -11,7 +11,7 @@ function validateHttpMethod(method: string): void {
   }
 }
 
-function validateAuthConfig(auth: NonNullable<LoadTestConfig['auth']>): void {
+function validateAuthConfig(auth: NonNullable<EndpointTestConfig['auth']>): void {
   const validTypes = ['basic', 'bearer', 'apikey', 'custom'];
 
   if (!validTypes.includes(auth.type)) {
@@ -59,49 +59,59 @@ function loadConfig(): LoadTestConfig {
   }
 
   if (!fs.existsSync(configPath)) {
-    console.error('Config file not found at:', configPath);
-    console.error('Please create a config file with the following structure:');
-    console.error(`{
-  "endpoint": "https://httpbin.org/get",
-  "concurrentUsers": 10,
-  "frequencyMs": 1000
+    console.error('Config file not found at:', configPath);      console.error('Please create a config file with the following structure:');
+      console.error(`{
+  "endpoints": [
+    {
+      "endpoint": "https://httpbin.org/get",
+      "concurrentUsers": 10,
+      "frequencyMs": 1000
+    }
+  ]
 }`);
-    if (args.length === 0) {
-      console.error('\nAlternatively, you can specify a config file path as an argument:');
-      console.error('npm run dev -- /path/to/your/config.json');
-      console.error('node dist/index.js /path/to/your/config.json');
-    }
-    process.exit(1);
-  }
-
-  try {
-    const configData = fs.readFileSync(configPath, 'utf-8');
-    const config: LoadTestConfig = JSON.parse(configData);
-
-    console.log(`Using config file: ${configPath}`);
-
-    // Validate config
-    if (!config.endpoint || typeof config.endpoint !== 'string') {
-      throw new Error('endpoint must be a valid URL string');
+      if (args.length === 0) {
+        console.error('\nAlternatively, you can specify a config file path as an argument:');
+        console.error('npm run dev -- /path/to/your/config.json');
+        console.error('node dist/index.js /path/to/your/config.json');
+      }
+      process.exit(1);
     }
 
-    if (!config.concurrentUsers || config.concurrentUsers < 1) {
-      throw new Error('concurrentUsers must be a positive number');
-    }
+    try {
+      const configData = fs.readFileSync(configPath, 'utf-8');
+      const config: LoadTestConfig = JSON.parse(configData);
 
-    if (!config.frequencyMs || config.frequencyMs < 100) {
-      throw new Error('frequencyMs must be at least 100ms');
-    }
+      console.log(`Using config file: ${configPath}`);
 
-    // Validate HTTP method
-    if (config.method) {
-      validateHttpMethod(config.method);
-    }
+      // Validate config
+      if (!config.endpoints || !Array.isArray(config.endpoints) || config.endpoints.length === 0) {
+        throw new Error('endpoints must be a non-empty array of endpoint configurations');
+      }
 
-    // Validate authentication configuration
-    if (config.auth) {
-      validateAuthConfig(config.auth);
-    }
+      // Validate each endpoint
+      config.endpoints.forEach((endpoint, index) => {
+        if (!endpoint.endpoint || typeof endpoint.endpoint !== 'string') {
+          throw new Error(`endpoints[${index}].endpoint must be a valid URL string`);
+        }
+
+        if (!endpoint.concurrentUsers || endpoint.concurrentUsers < 1) {
+          throw new Error(`endpoints[${index}].concurrentUsers must be a positive number`);
+        }
+
+        if (!endpoint.frequencyMs || endpoint.frequencyMs < 100) {
+          throw new Error(`endpoints[${index}].frequencyMs must be at least 100ms`);
+        }
+
+        // Validate HTTP method
+        if (endpoint.method) {
+          validateHttpMethod(endpoint.method);
+        }
+
+        // Validate authentication configuration
+        if (endpoint.auth) {
+          validateAuthConfig(endpoint.auth);
+        }
+      });
 
     return config;
   } catch (error: any) {
