@@ -1,0 +1,9 @@
+{
+  "endpoint": "https://httpbin.org/get",
+  "concurrentUsers": 10,
+  "frequencyMs": 1000,
+  "headers": {
+    "Accept": "application/json",
+    "Content-Type": "application/json"
+  }
+}

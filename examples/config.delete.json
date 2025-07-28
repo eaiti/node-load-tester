@@ -1,0 +1,11 @@
+{
+  "endpoint": "https://httpbin.org/delete",
+  "method": "DELETE",
+  "concurrentUsers": 2,
+  "frequencyMs": 3000,
+  "auth": {
+    "type": "apikey",
+    "apiKey": "delete-api-key",
+    "apiKeyHeader": "X-Delete-Key"
+  }
+}

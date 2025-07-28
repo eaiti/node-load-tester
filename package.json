@@ -1,0 +1,43 @@
+{
+  "name": "node-load-tester",
+  "version": "1.0.0",
+  "description": "A simple load testing tool for HTTP endpoints",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "dev:example": "ts-node src/index.ts examples/config.example.json",
+    "dev:basic": "ts-node src/index.ts examples/config.basic-auth.json",
+    "dev:apikey": "ts-node src/index.ts examples/config.apikey.json",
+    "dev:custom": "ts-node src/index.ts examples/config.custom-auth.json",
+    "dev:post": "ts-node src/index.ts examples/config.post.json",
+    "dev:put": "ts-node src/index.ts examples/config.put.json",
+    "dev:patch": "ts-node src/index.ts examples/config.patch.json",
+    "dev:delete": "ts-node src/index.ts examples/config.delete.json",
+    "dev:head": "ts-node src/index.ts examples/config.head.json",
+    "dev:options": "ts-node src/index.ts examples/config.options.json",
+    "clean": "rm -rf dist",
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "keywords": [
+    "load-testing",
+    "http",
+    "performance"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "@types/node": "^20.0.0",
+    "jest": "^29.5.0",
+    "nock": "^13.3.0",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.0.0",
+    "ts-node": "^10.9.0"
+  },
+  "dependencies": {
+    "axios": "^1.6.0"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "endpoint": "https://api.example.com/protected",
+  "concurrentUsers": 3,
+  "frequencyMs": 800,
+  "auth": {
+    "type": "custom",
+    "customHeader": "X-Auth-Token",
+    "customValue": "your-custom-token-here"
+  }
+}

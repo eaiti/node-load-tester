@@ -1,0 +1,11 @@
+{
+  "endpoint": "https://api.example.com/data",
+  "method": "GET",
+  "concurrentUsers": 5,
+  "frequencyMs": 1000,
+  "auth": {
+    "type": "apikey",
+    "apiKey": "your-api-key-here",
+    "apiKeyHeader": "X-API-Key"
+  }
+}

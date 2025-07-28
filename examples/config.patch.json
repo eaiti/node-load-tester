@@ -1,0 +1,13 @@
+{
+  "endpoint": "https://httpbin.org/patch",
+  "method": "PATCH",
+  "concurrentUsers": 1,
+  "frequencyMs": 1000,
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": {
+    "status": "active",
+    "last_modified": "2025-01-01T00:00:00Z"
+  }
+}

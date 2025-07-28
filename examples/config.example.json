@@ -1,0 +1,13 @@
+{
+  "endpoint": "https://httpbin.org/bearer",
+  "concurrentUsers": 2,
+  "frequencyMs": 2000,
+  "headers": {
+    "Accept": "application/json",
+    "X-Test-Header": "load-tester-example"
+  },
+  "auth": {
+    "type": "bearer",
+    "token": "your-bearer-token-here"
+  }
+}

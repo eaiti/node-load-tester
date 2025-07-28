@@ -1,0 +1,10 @@
+{
+  "endpoint": "https://httpbin.org/get",
+  "method": "OPTIONS",
+  "concurrentUsers": 1,
+  "frequencyMs": 2000,
+  "headers": {
+    "Access-Control-Request-Method": "POST",
+    "Access-Control-Request-Headers": "Content-Type, Authorization"
+  }
+}

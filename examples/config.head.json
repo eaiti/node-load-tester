@@ -1,0 +1,9 @@
+{
+  "endpoint": "https://httpbin.org/status/200",
+  "method": "HEAD",
+  "concurrentUsers": 5,
+  "frequencyMs": 500,
+  "headers": {
+    "X-Custom-Header": "head-request-test"
+  }
+}

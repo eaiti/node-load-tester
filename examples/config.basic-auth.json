@@ -1,0 +1,10 @@
+{
+  "endpoint": "https://httpbin.org/basic-auth/testuser/testpass",
+  "concurrentUsers": 2,
+  "frequencyMs": 1500,
+  "auth": {
+    "type": "basic",
+    "username": "testuser",
+    "password": "testpass"
+  }
+}

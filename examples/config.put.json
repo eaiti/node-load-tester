@@ -1,0 +1,19 @@
+{
+  "endpoint": "https://httpbin.org/put",
+  "method": "PUT",
+  "concurrentUsers": 2,
+  "frequencyMs": 2000,
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": {
+    "id": 123,
+    "name": "Updated Resource",
+    "updated_at": "2025-01-01T00:00:00Z"
+  },
+  "auth": {
+    "type": "basic",
+    "username": "testuser",
+    "password": "testpass"
+  }
+}
