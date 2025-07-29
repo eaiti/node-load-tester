@@ -81,8 +81,8 @@ describe('Configuration Loading', () => {
 
       expect(config.headers).toBeDefined();
       expect(config.auth).toBeDefined();
-      expect(config.headers!['X-Custom-Header']).toBe('value');
-      expect(config.auth!.username).toBe('user');
+      expect(config.headers?.['X-Custom-Header']).toBe('value');
+      expect(config.auth?.username).toBe('user');
     });
   });
 

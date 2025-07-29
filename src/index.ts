@@ -140,8 +140,9 @@ function loadConfig(): LoadTestConfig {
     }
 
     return config;
-  } catch (error: any) {
-    console.error('Error loading config:', error.message);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error loading config:', errorMessage);
     process.exit(1);
   }
 }
@@ -194,8 +195,9 @@ async function main() {
 
   try {
     await loadTester.start();
-  } catch (error: any) {
-    console.error('Error starting load test:', error.message);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error starting load test:', errorMessage);
     process.exit(1);
   }
 }

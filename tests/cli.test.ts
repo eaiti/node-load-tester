@@ -10,17 +10,19 @@ const originalArgv = process.argv;
 const originalExit = process.exit;
 
 describe('Command Line Arguments', () => {
-  let mockExit: jest.MockedFunction<typeof process.exit>;
+  let mockExit: jest.SpyInstance;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockExit = jest.fn() as any;
-    process.exit = mockExit;
+    mockExit = jest.spyOn(process, 'exit').mockImplementation(() => {
+      throw new Error('process.exit called');
+    });
   });
 
   afterEach(() => {
     process.argv = originalArgv;
     process.exit = originalExit;
+    mockExit.mockRestore();
   });
 
   describe('Default config file', () => {

@@ -106,12 +106,12 @@ describe('Authentication Configuration Validation', () => {
 
     it('should validate auth types', () => {
       validAuthTypes.forEach(type => {
-        const config: EndpointTestConfig = {
+        const config = {
           endpoint: 'https://api.example.com/test',
           concurrentUsers: 1,
           frequencyMs: 1000,
           auth: {
-            type: type as any
+            type: type as 'basic' | 'bearer' | 'apikey' | 'custom'
           }
         };
 
@@ -215,7 +215,7 @@ describe('Authentication Configuration Validation', () => {
 
       expect(config.headers).toBeDefined();
       expect(config.auth?.type).toBe('apikey');
-      expect(config.headers!['Content-Type']).toBe('application/json');
+      expect(config.headers?.['Content-Type']).toBe('application/json');
     });
   });
 });

@@ -125,7 +125,13 @@ export class LoadTester {
       };
 
       // Build axios config
-      const axiosConfig: any = {
+      const axiosConfig: {
+        method: string;
+        url: string;
+        timeout: number;
+        headers: Record<string, string>;
+        data?: unknown;
+      } = {
         method: endpointConfig.method || 'GET',
         url: endpointConfig.endpoint,
         timeout: 30000, // 30 second timeout
@@ -167,16 +173,25 @@ export class LoadTester {
       this.writeToCsv(result, endpointConfig.method || 'GET', headers['User-Agent']);
 
       // No console output to avoid interfering with interactive display
-    } catch (error: any) {
+    } catch (error: unknown) {
       const responseTime = Date.now() - startTime;
       const userAgent = `LoadTester-${endpointName}-User-${userId}`;
+
+      // Type guard for axios error
+      const isAxiosError = (
+        err: unknown
+      ): err is { response?: { status: number }; message: string } => {
+        return typeof err === 'object' && err !== null && 'message' in err;
+      };
+
+      const errorInfo = isAxiosError(error) ? error : { message: 'Unknown error' };
 
       const result: RequestResult = {
         timestamp: startTime,
         responseTime,
-        statusCode: error.response?.status || 0,
+        statusCode: (error as { response?: { status: number } }).response?.status || 0,
         success: false,
-        error: error.message,
+        error: errorInfo.message,
         endpointName,
         endpoint: endpointConfig.endpoint
       };
@@ -196,7 +211,14 @@ export class LoadTester {
   }
 
   private applyAuthentication(
-    axiosConfig: any,
+    axiosConfig: {
+      method: string;
+      url: string;
+      timeout: number;
+      headers: Record<string, string>;
+      data?: unknown;
+      auth?: { username: string; password: string };
+    },
     headers: Record<string, string>,
     endpointConfig: EndpointTestConfig
   ): void {
@@ -361,7 +383,10 @@ export class LoadTester {
       if (!endpointGroups.has(key)) {
         endpointGroups.set(key, []);
       }
-      endpointGroups.get(key)!.push(result);
+      const group = endpointGroups.get(key);
+      if (group) {
+        group.push(result);
+      }
     });
 
     // Calculate stats for each endpoint
@@ -407,8 +432,9 @@ export class LoadTester {
     try {
       fs.writeFileSync(this.config.csvOutput, csvHeader);
       this.csvInitialized = true;
-    } catch (error: any) {
-      console.error(`Failed to initialize CSV file: ${error.message}`);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error(`Failed to initialize CSV file: ${errorMessage}`);
     }
   }
 
@@ -429,8 +455,9 @@ export class LoadTester {
 
     try {
       fs.appendFileSync(this.config.csvOutput, csvRow);
-    } catch (error: any) {
-      console.error(`Failed to write to CSV file: ${error.message}`);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error(`Failed to write to CSV file: ${errorMessage}`);
     }
   }
 }
