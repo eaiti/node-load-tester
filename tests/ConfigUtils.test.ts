@@ -299,16 +299,16 @@ describe('ConfigUtils', () => {
         frequencyMs: 1000,
         method: 'POST'
       };
-      
+
       expect(() => ConfigUtils.validateEndpoint(validEndpoint, 0)).not.toThrow();
-      
+
       const invalidEndpoint: EndpointTestConfig = {
         endpoint: 'https://api.example.com/test',
         concurrentUsers: 5,
         frequencyMs: 1000,
         method: 'INVALID' as 'POST' // Type assertion for testing invalid values
       };
-      
+
       expect(() => ConfigUtils.validateEndpoint(invalidEndpoint, 0)).toThrow();
     });
 
