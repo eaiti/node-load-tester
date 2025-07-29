@@ -1,10 +1,17 @@
 {
-  "endpoint": "https://api.example.com/protected",
-  "concurrentUsers": 3,
-  "frequencyMs": 800,
-  "auth": {
-    "type": "custom",
-    "customHeader": "X-Auth-Token",
-    "customValue": "your-custom-token-here"
-  }
+  "endpoints": [
+    {
+      "name": "Custom Auth Example",
+      "endpoint": "https://httpbin.org/headers",
+      "method": "GET",
+      "concurrentUsers": 3,
+      "frequencyMs": 800,
+      "auth": {
+        "type": "custom",
+        "customHeader": "X-Auth-Token",
+        "customValue": "your-custom-token-here"
+      }
+    }
+  ],
+  "stopAfterMs": 60000
 }

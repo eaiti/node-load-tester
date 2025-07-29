@@ -1,11 +1,17 @@
 {
-  "endpoint": "https://api.example.com/data",
-  "method": "GET",
-  "concurrentUsers": 5,
-  "frequencyMs": 1000,
-  "auth": {
-    "type": "apikey",
-    "apiKey": "your-api-key-here",
-    "apiKeyHeader": "X-API-Key"
-  }
+  "endpoints": [
+    {
+      "name": "API Key Example",
+      "endpoint": "https://httpbin.org/headers",
+      "method": "GET",
+      "concurrentUsers": 5,
+      "frequencyMs": 1000,
+      "auth": {
+        "type": "apikey",
+        "apiKey": "your-api-key-here",
+        "apiKeyHeader": "X-API-Key"
+      }
+    }
+  ],
+  "stopAfterMs": 60000
 }

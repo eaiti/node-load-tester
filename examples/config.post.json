@@ -1,21 +1,27 @@
 {
-  "endpoint": "https://httpbin.org/post",
-  "method": "POST",
-  "concurrentUsers": 3,
-  "frequencyMs": 1500,
-  "headers": {
-    "Content-Type": "application/json"
-  },
-  "body": {
-    "name": "Load Test",
-    "timestamp": "2025-01-01T00:00:00Z",
-    "data": {
-      "test": true,
-      "loadTestId": 12345
+  "endpoints": [
+    {
+      "name": "POST Request Example",
+      "endpoint": "https://httpbin.org/post",
+      "method": "POST",
+      "concurrentUsers": 3,
+      "frequencyMs": 1500,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "name": "Load Test",
+        "timestamp": "2025-01-01T00:00:00Z",
+        "data": {
+          "test": true,
+          "loadTestId": 12345
+        }
+      },
+      "auth": {
+        "type": "bearer",
+        "token": "your-jwt-token-here"
+      }
     }
-  },
-  "auth": {
-    "type": "bearer",
-    "token": "your-jwt-token-here"
-  }
+  ],
+  "stopAfterMs": 60000
 }

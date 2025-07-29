@@ -1,13 +1,20 @@
 {
-  "endpoint": "https://httpbin.org/bearer",
-  "concurrentUsers": 2,
-  "frequencyMs": 2000,
-  "headers": {
-    "Accept": "application/json",
-    "X-Test-Header": "load-tester-example"
-  },
-  "auth": {
-    "type": "bearer",
-    "token": "your-bearer-token-here"
-  }
+  "endpoints": [
+    {
+      "name": "Bearer Auth Example",
+      "endpoint": "https://httpbin.org/bearer",
+      "method": "GET",
+      "concurrentUsers": 2,
+      "frequencyMs": 2000,
+      "headers": {
+        "Accept": "application/json",
+        "X-Test-Header": "load-tester-example"
+      },
+      "auth": {
+        "type": "bearer",
+        "token": "your-bearer-token-here"
+      }
+    }
+  ],
+  "stopAfterMs": 60000
 }

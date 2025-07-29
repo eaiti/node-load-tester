@@ -1,10 +1,17 @@
 {
-  "endpoint": "https://httpbin.org/basic-auth/testuser/testpass",
-  "concurrentUsers": 2,
-  "frequencyMs": 1500,
-  "auth": {
-    "type": "basic",
-    "username": "testuser",
-    "password": "testpass"
-  }
+  "endpoints": [
+    {
+      "name": "Basic Auth Example",
+      "endpoint": "https://httpbin.org/basic-auth/testuser/testpass",
+      "method": "GET",
+      "concurrentUsers": 2,
+      "frequencyMs": 1500,
+      "auth": {
+        "type": "basic",
+        "username": "testuser",
+        "password": "testpass"
+      }
+    }
+  ],
+  "stopAfterMs": 60000
 }

@@ -1,9 +1,15 @@
 {
-  "endpoint": "https://httpbin.org/status/200",
-  "method": "HEAD",
-  "concurrentUsers": 5,
-  "frequencyMs": 500,
-  "headers": {
-    "X-Custom-Header": "head-request-test"
-  }
+  "endpoints": [
+    {
+      "name": "HEAD Request Example",
+      "endpoint": "https://httpbin.org/status/200",
+      "method": "HEAD",
+      "concurrentUsers": 5,
+      "frequencyMs": 500,
+      "headers": {
+        "X-Custom-Header": "head-request-test"
+      }
+    }
+  ],
+  "stopAfterMs": 60000
 }

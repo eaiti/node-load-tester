@@ -187,7 +187,19 @@ Examples:
   npm run dev -- ./my-config.json
   npm run dev -- /path/to/config.json
   npm run dev -- config.json --csv-output results.csv
-  node dist/index.js config.example.json
+  node dist/index.js examples/config.example.json
+
+Predefined Example Scripts:
+  npm run dev:example     # Bearer token authentication example
+  npm run dev:basic       # Basic authentication example
+  npm run dev:apikey      # API key authentication example
+  npm run dev:custom      # Custom header authentication example
+  npm run dev:post        # POST request example
+  npm run dev:put         # PUT request example
+  npm run dev:patch       # PATCH request example
+  npm run dev:delete      # DELETE request example
+  npm run dev:head        # HEAD request example
+  npm run dev:options     # OPTIONS request example
 
 Options:
   -h, --help              Show this help message
