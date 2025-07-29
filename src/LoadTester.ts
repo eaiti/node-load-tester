@@ -75,7 +75,7 @@ export class LoadTester {
     this.intervals.push(displayInterval);
 
     // Auto-stop after specified duration
-    const stopTimeout = setTimeout(() => {
+    const stopTimeout = setTimeout(async () => {
       if (this.isRunning) {
         if (stopAfterMs < 60000) {
           console.log(`\n⏰ Load test duration reached (${stopAfterSeconds} seconds).
@@ -84,14 +84,14 @@ export class LoadTester {
           console.log(`\n⏰ Load test duration reached (${stopAfterMinutes} minutes).
              Stopping automatically...`);
         }
-        this.stop();
+        await this.stop();
       }
     }, stopAfterMs);
 
     this.intervals.push(stopTimeout);
   }
 
-  stop(): void {
+  async stop(): Promise<void> {
     if (!this.isRunning) {
       return;
     }

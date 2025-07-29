@@ -178,16 +178,18 @@ async function main() {
   const loadTester = new LoadTester(config);
 
   // Handle graceful shutdown
-  process.on('SIGINT', () => {
+  process.on('SIGINT', async () => {
     console.log('\nReceived SIGINT, stopping load test...');
-    loadTester.stop();
-    process.exit(0);
+    await loadTester.stop();
+    // Give the terminal a moment to clean up
+    setTimeout(() => process.exit(0), 100);
   });
 
-  process.on('SIGTERM', () => {
+  process.on('SIGTERM', async () => {
     console.log('\nReceived SIGTERM, stopping load test...');
-    loadTester.stop();
-    process.exit(0);
+    await loadTester.stop();
+    // Give the terminal a moment to clean up
+    setTimeout(() => process.exit(0), 100);
   });
 
   try {

@@ -22,28 +22,42 @@ Create or modify the `config.json` file in the root directory:
 
 ```json
 {
-  "endpoint": "https://api.example.com/data",
-  "concurrentUsers": 10,
-  "frequencyMs": 1000,
-  "headers": {
-    "Accept": "application/json",
-    "Content-Type": "application/json"
-  },
-  "auth": {
-    "type": "bearer",
-    "token": "your-jwt-token-here"
-  }
+  "endpoints": [
+    {
+      "name": "API-Test",
+      "endpoint": "https://api.example.com/data",
+      "method": "GET",
+      "concurrentUsers": 10,
+      "frequencyMs": 1000,
+      "headers": {
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "auth": {
+        "type": "bearer",
+        "token": "your-jwt-token-here"
+      }
+    }
+  ],
+  "stopAfterMs": 300000,
+  "csvOutput": "results.csv"
 }
 ```
 
 ### Configuration Options
 
+- `endpoints`: Array of endpoint configurations to test (required)
+- `stopAfterMs`: Test duration in milliseconds (optional, defaults to 20 minutes)
+- `csvOutput`: Optional path to export detailed request data to CSV file
+
+For each endpoint in the `endpoints` array:
+- `name`: Optional name for the endpoint (defaults to "Endpoint-N")
 - `endpoint`: The HTTP endpoint to test (required)
+- `method`: HTTP method to use (optional, defaults to "GET")
 - `concurrentUsers`: Number of concurrent users/connections (minimum: 1)
 - `frequencyMs`: Frequency of requests in milliseconds (minimum: 100ms)
 - `headers`: Optional HTTP headers to include with each request
 - `auth`: Optional authentication configuration (see Authentication Types below)
-- `basicAuth`: Optional basic authentication (deprecated, use `auth` instead)
 
 ### Authentication Types
 
@@ -98,6 +112,77 @@ Note: `apiKeyHeader` defaults to `"X-API-Key"` if not specified.
 }
 ```
 
+## CSV Output
+
+The load tester can export detailed request data to a CSV file for further analysis. This feature captures comprehensive information about each individual request made during the test.
+
+### Enabling CSV Output
+
+You can enable CSV output in two ways:
+
+#### 1. Configuration File
+
+Add the `csvOutput` property to your config file:
+
+```json
+{
+  "endpoints": [
+    {
+      "name": "API-Test",
+      "endpoint": "https://api.example.com/data",
+      "concurrentUsers": 5,
+      "frequencyMs": 1000
+    }
+  ],
+  "csvOutput": "load-test-results.csv"
+}
+```
+
+#### 2. Command Line Argument
+
+Use the `--csv-output` flag when running the test:
+
+```bash
+# Development mode
+npm run dev -- config.json --csv-output results.csv
+
+# Production mode  
+node dist/index.js config.json --csv-output results.csv
+```
+
+### CSV Format
+
+The CSV file contains the following columns:
+
+- **Timestamp**: ISO 8601 timestamp of when the request was made
+- **EndpointName**: Name of the endpoint (from config or auto-generated)
+- **Endpoint**: Full URL that was requested
+- **Method**: HTTP method used (GET, POST, etc.)
+- **ResponseTime(ms)**: Response time in milliseconds
+- **StatusCode**: HTTP status code returned
+- **Success**: Boolean indicating if the request was successful
+- **Error**: Error message (if any) for failed requests
+- **UserAgent**: User agent string used for the request
+
+### Example CSV Output
+
+```csv
+Timestamp,EndpointName,Endpoint,Method,ResponseTime(ms),StatusCode,Success,Error,UserAgent
+2024-01-15T10:30:00.123Z,API-Test,"https://api.example.com/data",GET,245,200,true,"","Node-Load-Tester/1.0.0"
+2024-01-15T10:30:01.456Z,API-Test,"https://api.example.com/data",GET,189,200,true,"","Node-Load-Tester/1.0.0"
+2024-01-15T10:30:02.789Z,API-Test,"https://api.example.com/data",GET,0,0,false,"Request timeout","Node-Load-Tester/1.0.0"
+```
+
+### Use Cases
+
+The CSV output is particularly useful for:
+
+- **Performance Analysis**: Import into Excel, Python, or R for detailed statistical analysis
+- **Trend Analysis**: Identify patterns in response times over the duration of the test
+- **Error Investigation**: Filter and analyze failed requests to identify issues
+- **Reporting**: Create custom reports and visualizations for stakeholders
+- **Historical Comparison**: Compare results across different test runs
+
 ## Usage
 
 ### Default Configuration
@@ -118,10 +203,16 @@ npm start
 npm run dev -- ./my-config.json
 npm run dev -- /path/to/custom-config.json
 
+# With CSV output
+npm run dev -- ./my-config.json --csv-output results.csv
+
 # Production mode with custom config file
 npm run build
 node dist/index.js ./my-config.json
 node dist/index.js /path/to/custom-config.json
+
+# Production mode with CSV output
+node dist/index.js ./my-config.json --csv-output detailed-results.csv
 ```
 
 ### Help

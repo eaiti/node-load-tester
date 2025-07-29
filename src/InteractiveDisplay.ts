@@ -135,7 +135,10 @@ export class InteractiveDisplay {
   public stop(): void {
     if (this.multibar) {
       this.multibar.stop();
+      this.multibar = null;
     }
+    // Clear the bars map
+    this.endpointBars.clear();
   }
 
   private calculateEndpointStats(results: RequestResult[]): EndpointStats[] {
