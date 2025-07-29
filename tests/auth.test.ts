@@ -187,7 +187,7 @@ describe('Authentication Configuration Validation', () => {
         concurrentUsers: 1,
         frequencyMs: 1000,
         auth: {
-          type: "basic",
+          type: 'basic',
           username: 'legacy',
           password: 'legacy'
         }

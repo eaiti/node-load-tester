@@ -51,7 +51,7 @@ describe('Configuration Loading', () => {
         concurrentUsers: 2,
         frequencyMs: 200,
         auth: {
-          type: "basic",
+          type: 'basic',
           username: 'testuser',
           password: 'testpass'
         }

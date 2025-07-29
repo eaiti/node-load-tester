@@ -68,7 +68,8 @@ function loadConfig(): LoadTestConfig {
   }
 
   if (!fs.existsSync(configPath)) {
-    console.error('Config file not found at:', configPath); console.error('Please create a config file with the following structure:');
+    console.error('Config file not found at:', configPath);
+    console.error('Please create a config file with the following structure:');
     console.error(`{
   "endpoints": [
     {
@@ -154,8 +155,12 @@ async function main() {
     console.log('Usage:');
     console.log('  npm run dev                                    # Use default config.json');
     console.log('  npm run dev -- <config-file>                  # Use custom config file');
-    console.log('  npm run dev -- <config-file> --csv-output <file> # Save detailed results to CSV');
-    console.log('  node dist/index.js <config-file>               # Use custom config file (compiled)');
+    console.log(
+      '  npm run dev -- <config-file> --csv-output <file> # Save detailed results to CSV'
+    );
+    console.log(
+      '  node dist/index.js <config-file>               # Use custom config file (compiled)'
+    );
     console.log('\nExamples:');
     console.log('  npm run dev -- ./my-config.json');
     console.log('  npm run dev -- /path/to/config.json');

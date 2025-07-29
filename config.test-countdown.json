@@ -1,0 +1,12 @@
+{
+  "endpoints": [
+    {
+      "name": "API-Test",
+      "endpoint": "https://httpbin.org/get",
+      "method": "GET",
+      "concurrentUsers": 1,
+      "frequencyMs": 2000
+    }
+  ],
+  "stopAfterMs": 30000
+}

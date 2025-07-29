@@ -1,0 +1,19 @@
+{
+  "endpoints": [
+    {
+      "name": "API-Users",
+      "endpoint": "https://httpbin.org/get",
+      "method": "GET",
+      "concurrentUsers": 2,
+      "frequencyMs": 2000
+    },
+    {
+      "name": "API-Data",
+      "endpoint": "https://httpbin.org/delay/1",
+      "method": "GET",
+      "concurrentUsers": 1,
+      "frequencyMs": 3000
+    }
+  ],
+  "stopAfterMs": 10000
+}

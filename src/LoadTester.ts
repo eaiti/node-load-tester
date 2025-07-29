@@ -13,7 +13,8 @@ export class LoadTester {
 
   constructor(config: LoadTestConfig) {
     this.config = config;
-    this.display = new InteractiveDisplay(config.endpoints);
+    const stopAfterMs = this.config.stopAfterMs || 20 * 60 * 1000; // Default to 20 minutes
+    this.display = new InteractiveDisplay(config.endpoints, stopAfterMs);
   }
 
   async start(): Promise<void> {
@@ -46,7 +47,8 @@ export class LoadTester {
     // Display brief configuration summary
     this.config.endpoints.forEach((endpointConfig, index) => {
       const name = endpointConfig.name || `Endpoint-${index + 1}`;
-      console.log(`${name}: ${endpointConfig.concurrentUsers} users @ ${endpointConfig.frequencyMs}ms -> ${endpointConfig.endpoint}`);
+      console.log(`${name}: ${endpointConfig.concurrentUsers} users @
+        ${endpointConfig.frequencyMs}ms -> ${endpointConfig.endpoint}`);
     });
 
     console.log('\nPress Ctrl+C to stop\n');
@@ -76,9 +78,11 @@ export class LoadTester {
     const stopTimeout = setTimeout(() => {
       if (this.isRunning) {
         if (stopAfterMs < 60000) {
-          console.log(`\n⏰ Load test duration reached (${stopAfterSeconds} seconds). Stopping automatically...`);
+          console.log(`\n⏰ Load test duration reached (${stopAfterSeconds} seconds).
+             Stopping automatically...`);
         } else {
-          console.log(`\n⏰ Load test duration reached (${stopAfterMinutes} minutes). Stopping automatically...`);
+          console.log(`\n⏰ Load test duration reached (${stopAfterMinutes} minutes).
+             Stopping automatically...`);
         }
         this.stop();
       }
@@ -105,7 +109,11 @@ export class LoadTester {
     this.displayFinalStats();
   }
 
-  private async makeRequest(endpointConfig: EndpointTestConfig, endpointIndex: number, userId: number): Promise<void> {
+  private async makeRequest(
+    endpointConfig: EndpointTestConfig,
+    endpointIndex: number,
+    userId: number
+  ): Promise<void> {
     const startTime = Date.now();
     const endpointName = endpointConfig.name || `Endpoint-${endpointIndex + 1}`;
 
@@ -187,7 +195,11 @@ export class LoadTester {
     return methodsWithBody.includes(method.toUpperCase());
   }
 
-  private applyAuthentication(axiosConfig: any, headers: Record<string, string>, endpointConfig: EndpointTestConfig): void {
+  private applyAuthentication(
+    axiosConfig: any,
+    headers: Record<string, string>,
+    endpointConfig: EndpointTestConfig
+  ): void {
     // Handle auth format
     if (endpointConfig.auth) {
       switch (endpointConfig.auth.type) {
@@ -249,7 +261,9 @@ export class LoadTester {
     if (endpointStats.length > 1) {
       console.log('\n--- Per-Endpoint Statistics ---');
       endpointStats.forEach(stats => {
-        console.log(`${stats.endpointName}: ${stats.totalRequests} requests, ${stats.successfulRequests} successful (${((stats.successfulRequests / stats.totalRequests) * 100).toFixed(1)}%), ${stats.averageResponseTime.toFixed(2)}ms avg`);
+        console.log(
+          `${stats.endpointName}: ${stats.totalRequests} requests, ${stats.successfulRequests} successful (${((stats.successfulRequests / stats.totalRequests) * 100).toFixed(1)}%), ${stats.averageResponseTime.toFixed(2)}ms avg`
+        );
       });
     }
     console.log('');
@@ -285,8 +299,12 @@ export class LoadTester {
         console.log(`\n--- ${stats.endpointName} ---`);
         console.log(`URL: ${stats.endpoint}`);
         console.log(`Total Requests: ${stats.totalRequests}`);
-        console.log(`Successful: ${stats.successfulRequests} (${((stats.successfulRequests / stats.totalRequests) * 100).toFixed(1)}%)`);
-        console.log(`Failed: ${stats.failedRequests} (${((stats.failedRequests / stats.totalRequests) * 100).toFixed(1)}%)`);
+        console.log(
+          `Successful: ${stats.successfulRequests} (${((stats.successfulRequests / stats.totalRequests) * 100).toFixed(1)}%)`
+        );
+        console.log(
+          `Failed: ${stats.failedRequests} (${((stats.failedRequests / stats.totalRequests) * 100).toFixed(1)}%)`
+        );
         console.log(`Average Response Time: ${stats.averageResponseTime.toFixed(2)}ms`);
         console.log(`Min Response Time: ${stats.minResponseTime}ms`);
         console.log(`Max Response Time: ${stats.maxResponseTime}ms`);
@@ -383,7 +401,8 @@ export class LoadTester {
       return;
     }
 
-    const csvHeader = 'Timestamp,EndpointName,Endpoint,Method,ResponseTime(ms),StatusCode,Success,Error,UserAgent\n';
+    const csvHeader =
+      'Timestamp,EndpointName,Endpoint,Method,ResponseTime(ms),StatusCode,Success,Error,UserAgent\n';
 
     try {
       fs.writeFileSync(this.config.csvOutput, csvHeader);

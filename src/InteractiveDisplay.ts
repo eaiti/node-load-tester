@@ -18,12 +18,30 @@ interface EndpointStats {
 export class InteractiveDisplay {
   private multibar: cliProgress.MultiBar | null = null;
   private endpointBars: Map<string, cliProgress.SingleBar> = new Map();
+  private endpointExpectedTotals: Map<string, number> = new Map();
   private isInteractive: boolean = false;
   private startTime: number = Date.now();
   private lastUpdateTime: number = Date.now();
   private previousTotalRequests: number = 0;
 
-  constructor(private endpoints: EndpointTestConfig[]) { }
+  constructor(
+    private endpoints: EndpointTestConfig[],
+    private stopAfterMs: number
+  ) {
+    // Calculate expected total requests for each endpoint
+    this.endpoints.forEach((endpoint, index) => {
+      const endpointName = endpoint.name || `Endpoint-${index + 1}`;
+      const expectedRequests = this.calculateExpectedRequests(endpoint, stopAfterMs);
+      this.endpointExpectedTotals.set(endpointName, expectedRequests);
+    });
+  }
+
+  private calculateExpectedRequests(endpoint: EndpointTestConfig, stopAfterMs: number): number {
+    // Calculate how many requests each user will make
+    const requestsPerUser = Math.floor(stopAfterMs / endpoint.frequencyMs);
+    // Total requests = requests per user * number of concurrent users
+    return requestsPerUser * endpoint.concurrentUsers;
+  }
 
   public start(): void {
     // Check if we're in an interactive terminal
@@ -40,21 +58,25 @@ export class InteractiveDisplay {
       {
         clearOnComplete: false,
         hideCursor: true,
-        format: ' {bar} | {endpoint} | {percentage}% | {value}/{total} | {eta_formatted} | {stats}',
+        format: ' {bar} | {endpoint} | {percentage}% | {value}/{total} | {remaining} | {stats}',
         barCompleteChar: '\u2588',
         barIncompleteChar: '\u2591',
-        barsize: 20
+        barsize: 15
       },
       cliProgress.Presets.shades_grey
     );
 
-    // Create a progress bar for each endpoint
+    // Create a progress bar for each endpoint with calculated totals
     this.endpoints.forEach((endpoint, index) => {
       const endpointName = endpoint.name || `Endpoint-${index + 1}`;
+      const expectedTotal = this.endpointExpectedTotals.get(endpointName) || 100;
+
       if (this.multibar) {
-        const bar = this.multibar.create(1000, 0, {
-          endpoint: endpointName.substring(0, 20).padEnd(20),
-          stats: 'Starting...',
+        const remainingSeconds = Math.ceil(this.stopAfterMs / 1000);
+        const bar = this.multibar.create(expectedTotal, 0, {
+          endpoint: endpointName.substring(0, 12).padEnd(12),
+          remaining: `${remainingSeconds}s`,
+          stats: 'Starting...'
         });
         this.endpointBars.set(endpointName, bar);
       }
@@ -73,7 +95,9 @@ export class InteractiveDisplay {
         const requestsSinceLastUpdate = totalRequests - this.previousTotalRequests;
         const currentRps = requestsSinceLastUpdate / ((currentTime - this.lastUpdateTime) / 1000);
 
-        console.log(`[${elapsedSeconds.toFixed(0)}s] Total: ${totalRequests} requests | RPS: ${currentRps.toFixed(1)}`);
+        console.log(
+          `[${elapsedSeconds.toFixed(0)}s] Total: ${totalRequests} requests | RPS: ${currentRps.toFixed(1)}`
+        );
 
         this.lastUpdateTime = currentTime;
         this.previousTotalRequests = totalRequests;
@@ -83,16 +107,26 @@ export class InteractiveDisplay {
 
     const endpointStats = this.calculateEndpointStats(results);
 
-    endpointStats.forEach((stats) => {
+    endpointStats.forEach(stats => {
       const bar = this.endpointBars.get(stats.name);
       if (bar) {
-        const progress = Math.min(stats.totalRequests / 100, 1000); // Scale to bar max
-        const statsText = `${stats.successfulRequests}/${stats.totalRequests} (${((stats.successfulRequests / Math.max(stats.totalRequests, 1)) * 100).toFixed(1)}%) | ${stats.averageResponseTime.toFixed(0)}ms avg | ${stats.latencyChart}`;
+        const successRate = (
+          (stats.successfulRequests / Math.max(stats.totalRequests, 1)) *
+          100
+        ).toFixed(0);
+        const statsText = `${successRate}% | ${stats.averageResponseTime.toFixed(0)}ms | ${stats.latencyChart}`;
+        
+        // Calculate remaining time based on test duration
+        const elapsed = Date.now() - this.startTime;
+        const remaining = Math.max(0, this.stopAfterMs - elapsed);
+        const remainingSeconds = Math.ceil(remaining / 1000);
+        const remainingText = remainingSeconds > 0 ? `${remainingSeconds}s` : '0s';
 
-        bar.update(progress, {
+        bar.update(stats.totalRequests, {
           stats: statsText,
+          remaining: remainingText,
           value: stats.totalRequests,
-          total: '∞',
+          total: this.endpointExpectedTotals.get(stats.name) || stats.totalRequests
         });
       }
     });
@@ -108,7 +142,7 @@ export class InteractiveDisplay {
     const endpointGroups = new Map<string, RequestResult[]>();
 
     // Group results by endpoint
-    results.forEach((result) => {
+    results.forEach(result => {
       const key = result.endpointName || 'Unknown';
       if (!endpointGroups.has(key)) {
         endpointGroups.set(key, []);
@@ -125,24 +159,25 @@ export class InteractiveDisplay {
       const failedRequests = totalRequests - successfulRequests;
 
       const responseTimes = endpointResults.map(r => r.responseTime);
-      const averageResponseTime = responseTimes.reduce((sum, time) => sum + time, 0) / totalRequests;
+      const averageResponseTime =
+        responseTimes.reduce((sum, time) => sum + time, 0) / totalRequests;
       const minResponseTime = Math.min(...responseTimes);
       const maxResponseTime = Math.max(...responseTimes);
 
       // Calculate requests per second based on last 10 seconds of data
       const now = Date.now();
-      const recentResults = endpointResults.filter(r => (now - r.timestamp) <= 10000);
+      const recentResults = endpointResults.filter(r => now - r.timestamp <= 10000);
       const requestsPerSecond = recentResults.length / 10;
 
       // Get recent latencies for chart (last 20 requests)
-      const recentLatencies = endpointResults
-        .slice(-20)
-        .map(r => r.responseTime);
+      const recentLatencies = endpointResults.slice(-20).map(r => r.responseTime);
 
       const latencyChart = this.generateLatencyChart(recentLatencies);
 
       // Find the endpoint config to get the actual endpoint URL
-      const endpointConfig = this.endpoints.find(e => (e.name || `Endpoint-${this.endpoints.indexOf(e) + 1}`) === endpointName);
+      const endpointConfig = this.endpoints.find(
+        e => (e.name || `Endpoint-${this.endpoints.indexOf(e) + 1}`) === endpointName
+      );
       const endpoint = endpointConfig?.endpoint || 'Unknown';
 
       return {
@@ -156,7 +191,7 @@ export class InteractiveDisplay {
         maxResponseTime: isNaN(maxResponseTime) ? 0 : maxResponseTime,
         requestsPerSecond,
         latencyChart,
-        recentLatencies,
+        recentLatencies
       };
     });
   }
