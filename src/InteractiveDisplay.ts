@@ -115,7 +115,7 @@ export class InteractiveDisplay {
           100
         ).toFixed(0);
         const statsText = `${successRate}% | ${stats.averageResponseTime.toFixed(0)}ms | ${stats.latencyChart}`;
-        
+
         // Calculate remaining time based on test duration
         const elapsed = Date.now() - this.startTime;
         const remaining = Math.max(0, this.stopAfterMs - elapsed);
