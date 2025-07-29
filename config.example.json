@@ -1,0 +1,19 @@
+{
+  "endpoints": [
+    {
+      "name": "JSONPlaceholder Posts",
+      "endpoint": "https://jsonplaceholder.typicode.com/posts/1",
+      "method": "GET",
+      "concurrentUsers": 5,
+      "frequencyMs": 2000,
+      "headers": {
+        "Accept": "application/json"
+      }
+    }
+  ],
+  "stopAfterMs": 300000,
+  "auth": {
+    "type": "bearer",
+    "token": "your-bearer-token-here"
+  }
+}

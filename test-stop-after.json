@@ -1,0 +1,12 @@
+{
+  "stopAfterMs": 10000,
+  "endpoints": [
+    {
+      "name": "Test Endpoint",
+      "endpoint": "https://httpbin.org/get",
+      "method": "GET",
+      "concurrentUsers": 2,
+      "frequencyMs": 2000
+    }
+  ]
+}

@@ -23,7 +23,9 @@ export interface EndpointTestConfig {
 }
 
 export interface LoadTestConfig {
+  stopAfterMs?: number; // Optional, defaults to 20 minutes
   endpoints: EndpointTestConfig[];
+  csvOutput?: string; // Optional CSV file path for detailed request logging
 }
 
 export interface RequestResult {

@@ -1,0 +1,35 @@
+{
+  "stopAfterMs": 300000,
+  "endpoints": [
+    {
+      "name": "DDoS Shield API",
+      "endpoint": "https://ddosshield3-qa.eaiti.com/api/trafficenhancer",
+      "method": "GET",
+      "concurrentUsers": 30,
+      "frequencyMs": 10000,
+      "headers": {
+        "VZ_UID": "vz-user-1",
+        "VZ_USER": "Verizon User",
+        "VZ_ROLE": "ops"
+      }
+    },
+    {
+      "name": "Health Check",
+      "endpoint": "https://ddosshield3-qa.eaiti.com/health",
+      "method": "GET",
+      "concurrentUsers": 5,
+      "frequencyMs": 5000
+    },
+    {
+      "name": "Stats Endpoint",
+      "endpoint": "https://ddosshield3-qa.eaiti.com/api/stats",
+      "method": "GET",
+      "concurrentUsers": 10,
+      "frequencyMs": 15000,
+      "auth": {
+        "type": "bearer",
+        "token": "your-jwt-token-here"
+      }
+    }
+  ]
+}

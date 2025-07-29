@@ -1,14 +1,19 @@
 import axios, { AxiosResponse } from 'axios';
+import * as fs from 'fs';
 import { LoadTestConfig, EndpointTestConfig, RequestResult, EndpointStats } from './types';
+import { InteractiveDisplay } from './InteractiveDisplay';
 
 export class LoadTester {
   private config: LoadTestConfig;
   private results: RequestResult[] = [];
   private isRunning = false;
   private intervals: NodeJS.Timeout[] = [];
+  private csvInitialized = false;
+  private display: InteractiveDisplay;
 
   constructor(config: LoadTestConfig) {
     this.config = config;
+    this.display = new InteractiveDisplay(config.endpoints);
   }
 
   async start(): Promise<void> {
@@ -24,24 +29,30 @@ export class LoadTester {
     this.isRunning = true;
     this.results = [];
 
+    // Initialize CSV if enabled
+    this.initializeCsv();
+
+    const stopAfterMs = this.config.stopAfterMs || 20 * 60 * 1000; // Default to 20 minutes
+    const stopAfterMinutes = Math.round(stopAfterMs / 60000);
+    const stopAfterSeconds = Math.round(stopAfterMs / 1000);
+
     console.log(`Starting load test with ${this.config.endpoints.length} endpoint(s)...`);
-    
-    // Display configuration for each endpoint
+    if (stopAfterMs < 60000) {
+      console.log(`Auto-stop: ${stopAfterSeconds} seconds`);
+    } else {
+      console.log(`Auto-stop: ${stopAfterMinutes} minutes`);
+    }
+
+    // Display brief configuration summary
     this.config.endpoints.forEach((endpointConfig, index) => {
-      console.log(`\n--- Endpoint ${index + 1}: ${endpointConfig.name || 'Unnamed'} ---`);
-      console.log(`URL: ${endpointConfig.endpoint}`);
-      console.log(`Method: ${endpointConfig.method || 'GET'}`);
-      console.log(`Concurrent Users: ${endpointConfig.concurrentUsers}`);
-      console.log(`Frequency: ${endpointConfig.frequencyMs}ms`);
-      if (endpointConfig.body) {
-        console.log(`Request Body: ${typeof endpointConfig.body === 'string' ? 'String' : 'JSON Object'}`);
-      }
-      if (endpointConfig.auth) {
-        console.log(`Authentication: ${endpointConfig.auth.type}`);
-      }
+      const name = endpointConfig.name || `Endpoint-${index + 1}`;
+      console.log(`${name}: ${endpointConfig.concurrentUsers} users @ ${endpointConfig.frequencyMs}ms -> ${endpointConfig.endpoint}`);
     });
-    
+
     console.log('\nPress Ctrl+C to stop\n');
+
+    // Start the interactive display
+    this.display.start();
 
     // Start concurrent users for each endpoint
     this.config.endpoints.forEach((endpointConfig, endpointIndex) => {
@@ -54,12 +65,26 @@ export class LoadTester {
       }
     });
 
-    // Display stats every 5 seconds
-    const statsInterval = setInterval(() => {
-      this.displayStats();
-    }, 5000);
+    // Update display every 1 second for responsive UI
+    const displayInterval = setInterval(() => {
+      this.display.update(this.results);
+    }, 1000);
 
-    this.intervals.push(statsInterval);
+    this.intervals.push(displayInterval);
+
+    // Auto-stop after specified duration
+    const stopTimeout = setTimeout(() => {
+      if (this.isRunning) {
+        if (stopAfterMs < 60000) {
+          console.log(`\n⏰ Load test duration reached (${stopAfterSeconds} seconds). Stopping automatically...`);
+        } else {
+          console.log(`\n⏰ Load test duration reached (${stopAfterMinutes} minutes). Stopping automatically...`);
+        }
+        this.stop();
+      }
+    }, stopAfterMs);
+
+    this.intervals.push(stopTimeout);
   }
 
   stop(): void {
@@ -69,11 +94,14 @@ export class LoadTester {
 
     this.isRunning = false;
 
+    // Stop the interactive display
+    this.display.stop();
+
     // Clear all intervals
     this.intervals.forEach(interval => clearInterval(interval));
     this.intervals = [];
 
-    console.log('\nLoad test stopped');
+    console.log('\n\nLoad test stopped');
     this.displayFinalStats();
   }
 
@@ -116,20 +144,26 @@ export class LoadTester {
 
       const responseTime = Date.now() - startTime;
 
-      this.results.push({
+      const result: RequestResult = {
         timestamp: startTime,
         responseTime,
         statusCode: response.status,
         success: true,
         endpointName,
         endpoint: endpointConfig.endpoint
-      });
+      };
 
-      process.stdout.write('.');
+      this.results.push(result);
+
+      // Write to CSV if enabled
+      this.writeToCsv(result, endpointConfig.method || 'GET', headers['User-Agent']);
+
+      // No console output to avoid interfering with interactive display
     } catch (error: any) {
       const responseTime = Date.now() - startTime;
+      const userAgent = `LoadTester-${endpointName}-User-${userId}`;
 
-      this.results.push({
+      const result: RequestResult = {
         timestamp: startTime,
         responseTime,
         statusCode: error.response?.status || 0,
@@ -137,9 +171,14 @@ export class LoadTester {
         error: error.message,
         endpointName,
         endpoint: endpointConfig.endpoint
-      });
+      };
 
-      process.stdout.write('x');
+      this.results.push(result);
+
+      // Write to CSV if enabled
+      this.writeToCsv(result, endpointConfig.method || 'GET', userAgent);
+
+      // No console output to avoid interfering with interactive display
     }
   }
 
@@ -192,7 +231,7 @@ export class LoadTester {
     }
 
     console.log('\n--- Load Test Statistics ---');
-    
+
     // Overall stats
     const overallStats = this.calculateStats();
     console.log(`Total Requests: ${overallStats.totalRequests}`);
@@ -223,7 +262,7 @@ export class LoadTester {
     }
 
     console.log('\n=== Final Load Test Results ===');
-    
+
     // Overall stats
     const overallStats = this.calculateStats();
     console.log(`Total Requests: ${overallStats.totalRequests}`);
@@ -297,7 +336,7 @@ export class LoadTester {
 
   private calculateEndpointStats(): EndpointStats[] {
     const endpointGroups = new Map<string, RequestResult[]>();
-    
+
     // Group results by endpoint
     this.results.forEach(result => {
       const key = `${result.endpointName || 'Unknown'}|${result.endpoint}`;
@@ -337,5 +376,42 @@ export class LoadTester {
         requestsPerSecond
       };
     });
+  }
+
+  private initializeCsv(): void {
+    if (!this.config.csvOutput || this.csvInitialized) {
+      return;
+    }
+
+    const csvHeader = 'Timestamp,EndpointName,Endpoint,Method,ResponseTime(ms),StatusCode,Success,Error,UserAgent\n';
+
+    try {
+      fs.writeFileSync(this.config.csvOutput, csvHeader);
+      this.csvInitialized = true;
+    } catch (error: any) {
+      console.error(`Failed to initialize CSV file: ${error.message}`);
+    }
+  }
+
+  private writeToCsv(result: RequestResult, method: string, userAgent: string): void {
+    if (!this.config.csvOutput || !this.csvInitialized) {
+      return;
+    }
+
+    const timestamp = new Date(result.timestamp).toISOString();
+    const endpointName = result.endpointName || 'Unknown';
+    const endpoint = result.endpoint;
+    const responseTime = result.responseTime;
+    const statusCode = result.statusCode;
+    const success = result.success;
+    const error = result.error ? `"${result.error.replace(/"/g, '""')}"` : ''; // Escape quotes in error messages
+
+    const csvRow = `${timestamp},${endpointName},"${endpoint}",${method},${responseTime},${statusCode},${success},${error},"${userAgent}"\n`;
+
+    try {
+      fs.appendFileSync(this.config.csvOutput, csvRow);
+    } catch (error: any) {
+      console.error(`Failed to write to CSV file: ${error.message}`);
+    }
   }
 }
